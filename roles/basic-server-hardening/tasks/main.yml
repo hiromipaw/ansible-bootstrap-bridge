@@ -1,7 +1,7 @@
 ---
 - name: Disallow root SSH access
   lineinfile:
-    dest: /etc/ssh/sshd_config 
+    dest: /etc/ssh/sshd_config
     regexp: "^PermitRootLogin"
     line: "PermitRootLogin no"
     state: present
@@ -9,15 +9,18 @@
 
 - name: Disallow password authentication
   lineinfile:
-    dest: /etc/ssh/sshd_config 
-    regexp: "^PasswordAuthentication" 
+    dest: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
     line: "PasswordAuthentication no"
     state: present
   notify: Restart ssh
 
-- name: Enable a basic firewall
+- name: Enable OpenSSH on ufw
   become: yes
-  shell: |
-    ufw allow OpenSSH
-    ufw enable
+  command: ufw allow OpenSSH
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Enable ORPort on ufw
+  become: yes
+  command: ufw allow 9000/tcp
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

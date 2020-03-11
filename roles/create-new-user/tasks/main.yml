@@ -1,6 +1,6 @@
 ---
 - name: Creating a user named {{ username }} on the specified web server (Debian).
-  user: 
+  user:
     name: "{{ username }}"
     password: "{{ hashed_password }}"
     state: present
@@ -13,7 +13,7 @@
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Creating a user named {{ username }} on the specified web server (RHEL).
-  user: 
+  user:
     name: "{{ username }}"
     password: "{{ hashed_password }}"
     state: present
@@ -27,8 +27,8 @@
 
 - name: Copy .ssh/id_rsa from host box to the remote box for user {{ username }}
   become: true
-  copy: 
-    src: ~/.ssh/id_rsa.pub
+  copy:
+    src: "{{ ssh_key }}"
     dest: /home/{{ username }}/.ssh/authorized_keys
     mode: 0600
     owner: "{{ username }}"

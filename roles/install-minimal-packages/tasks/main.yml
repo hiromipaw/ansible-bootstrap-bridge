@@ -1,6 +1,6 @@
 ---
 - name: Install necessary packages (DEBIAN)
-  package: 
+  package:
     name: '{{ item }}'
     state: latest
   with_items:
@@ -9,12 +9,14 @@
   - tree
   - vim
   - ufw
-  - build-essential 
+  - build-essential
   - libssl-dev
   - libffi-dev
   - python-dev
   - python-pip
   - net-tools
+  - tor
+  - obfs4proxy
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
 - name: Install necessary packages (RHEL)
@@ -24,8 +26,54 @@
   - wget
   - tree
   - vim
-  - gcc 
+  - gcc
   - libffi-devel
   - python-devel
   - openssl-devel
+  - epel-release
+  - golang
+  - go
+  - tor
+  - policycoreutils-python-utils
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Export GOPATH
+  command: export GOPATH=`mktemp -d`
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Get obsf4 source
+  command: go get gitlab.com/yawning/obfs4.git/obfs4proxy
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Copy obsf4 to /usr/local/bin
+  command: sudo cp $GOPATH/bin/obfs4proxy /usr/local/bin/
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Change security context
+  command: chcon --reference=/usr/bin/tor /usr/local/bin/obfs4proxy
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Set NoNewPrivileges=no in /lib/systemd/system/tor@default.service see https://trac.torproject.org/projects/tor/ticket/18356
+  lineinfile:
+    path: /lib/systemd/system/tor@default.service
+    line: NoNewPrivileges=no
+    create: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: Set NoNewPrivileges=no in /lib/systemd/system/tor@.service see https://trac.torproject.org/projects/tor/ticket/18356
+  lineinfile:
+    path: /lib/systemd/system/tor@.service
+    line: NoNewPrivileges=no
+    create: yes
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- name: copy torrc config
+  template:
+    src: torrc.j2
+    dest: "/etc/tor/torrc"
+    mode: 0444
+
+- name: Restart service tor, in all cases
+  service:
+    name: tor
+    state: restarted
