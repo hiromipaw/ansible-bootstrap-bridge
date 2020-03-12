@@ -28,16 +28,6 @@ Targets Debian and RHEL based systems
 
 ## Running it
 
-**NOTE**: You need to have `sshpass` on your machine. [Ref](https://gist.github.com/arunoda/7790979)
-
-For Mac
-
-- `brew install https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb`
-
-For Debian based systems
-
-- `apt-get install sshpass`
-
 ```bash
 $ cp inventory.example inventory
 $ cat inventory.example

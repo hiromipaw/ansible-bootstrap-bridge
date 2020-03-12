@@ -2,6 +2,7 @@
 <ip-addr>
 
 [all:vars]
-ansible_connection=ssh 
-ansible_ssh_user=root 
+ansible_connection=ssh
+ansible_ssh_user=root
 ansible_ssh_pass=<your-pass>
+private_key_file='~/.ssh/smartcard'
